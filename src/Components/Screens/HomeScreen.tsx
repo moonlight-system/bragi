@@ -5,7 +5,6 @@ import { PlaylistListItem } from "../Playlist_List_Item";
 import { CursorList } from "../CursorList";
 import type { Playlist, Song } from '../../types_and_functions';
 import { open } from '@tauri-apps/plugin-dialog';
-import { copyFile } from '@tauri-apps/plugin-fs';
 import { join } from '@tauri-apps/api/path';
 import { getBragiDir } from '../../storage';
 import type { Player } from '../../usePlayer';
@@ -13,6 +12,8 @@ import { ProgressBar } from "../ProgressBar";
 import { Visualizer } from "../Visualizer";
 import { EditableLabel } from "../EditableLabel";
 import type { ItemEditor } from "../CursorList";
+import { copyFile, readFile } from '@tauri-apps/plugin-fs';
+import { parseBuffer } from 'music-metadata';
 
 type FocusColumn = "playlists" | "songs";
 
@@ -50,6 +51,18 @@ function PlayerButton({ label, onClick, active = false }: {
       </button>
     );
   }
+
+// reads the artist from the mp3's tags (ID3); null if the file has none or can't be read
+async function readArtistTag(filePath: string): Promise<string | null> {
+  try {
+    const bytes = await readFile(filePath);
+    const meta = await parseBuffer(bytes, { mimeType: 'audio/mpeg' }, { duration: false, skipCovers: true });
+    return meta.common.artist?.trim() || null;
+  } catch (err) {
+    console.error('could not read tags:', err);
+    return null;
+  }
+}
 
 function HomeScreen({
   playlists,
@@ -147,13 +160,14 @@ function HomeScreen({
       const bragiDir = await getBragiDir();
       const destPath = await join(bragiDir, 'songs', `${id}.mp3`);
       await copyFile(sourcePath, destPath);
+      const artist = await readArtistTag(destPath);
 
       const fileName = sourcePath.split(/[\\/]/).pop() ?? 'Unknown';
       newSongs.push({
         id,
         path: `${id}.mp3`,
         name: fileName.replace(/\.mp3$/i, ''),
-        artist: 'Unknown Artist',
+        artist: artist ?? 'Unknown Artist',
       });
     }
 
@@ -307,7 +321,7 @@ function HomeScreen({
           <div className="keybinds_footer">
             <div className="keybind_label">Space: play / pause</div>
             <div className="keybind_label">j / l: back / forward 10s</div>
-            <div className="keybind_label">Shift + N / P: next / previous</div>
+            <div className="keybind_label">Shift + n / p: next / previous</div>
             <div className="keybind_label">o: loop song</div>
             <div className="keybind_label">z: shuffle</div>
           </div>
