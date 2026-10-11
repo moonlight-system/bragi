@@ -30,6 +30,7 @@
   --tertiary-bg-color: #141418;
   --text-color: #ffffff;
 
+  --global-accent-color: #00ff9d;
   --title-accent-color: #00ff9d;
   --playlist-accent-color: #00ff9d;
   --songs-accent-color: #00ff9d;
@@ -42,6 +43,8 @@
 html, body, #root {
   margin: 0;
   height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 .AppContainer{
   height: 100%;

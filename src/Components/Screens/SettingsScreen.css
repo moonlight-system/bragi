@@ -19,6 +19,7 @@
 
 .main_settings_panel{
     --settings-column-gap: 4rem;   /* ← THE knob: space between the labels and the pickers */
+    --settings-indent: 6rem;
 
     flex: 1;
     min-width: 0;                  /* lets the panel shrink with the window */
@@ -67,4 +68,26 @@
 /* every picker hugs the right edge of its column, whatever its width */
 .setting_control .palette_picker {
     margin-left: auto;
+}
+
+.setting_label_indented {
+    padding-left: calc(2rem + var(--settings-indent));
+}
+
+/* the preset dropdown hugs the right edge of its column, like the pickers */
+.setting_control .preset_select {
+    display: block;
+    margin-left: auto;
+    margin-right: 12px;
+    border-radius: 4px;
+    min-width: 24rem;
+    letter-spacing: inherit;     /* form controls don't inherit this one by default */
+    cursor: pointer;
+    text-align: center;
+    text-align-last: center;
+}
+
+.preset_select option {
+    background-color: var(--tertiary-bg-color);
+    color: var(--text-color);
 }

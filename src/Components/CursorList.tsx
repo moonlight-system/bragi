@@ -161,12 +161,17 @@ function CursorList<T>({
                             <div
                             className="rendered_item"
                             ref={(el) => { rowRefs.current[index] = el; }}
-                            key={keyExtractor(item)}>
-                                {renderItem(item, index === selectedIndex, {
-                                    field: mode === "renaming" && index === selectedIndex ? editingField : null,
-                                    commit: commitEdit,
-                                    cancel: stopEditing,
-                                })}
+                            key={keyExtractor(item)}
+                            onClick={() => {
+                                if (mode !== "idle") return;
+                                onSelectedIndexChange(index);
+                                onActivate?.(item);
+                            }}>
+                            {renderItem(item, index === selectedIndex, {
+                                field: mode === "renaming" && index === selectedIndex ? editingField : null,
+                                commit: commitEdit,
+                                cancel: stopEditing,
+                            })}
                             </div>
                         ))}
                     </div>

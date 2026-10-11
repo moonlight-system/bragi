@@ -1,6 +1,6 @@
 import { readTextFile, writeTextFile, exists, mkdir } from '@tauri-apps/plugin-fs';
 import { homeDir, join } from '@tauri-apps/api/path';
-import type { Playlist, Song } from './types_and_functions';
+import type { Playlist, Song, UserPreferences } from './types_and_functions';
 
 async function getBragiDir() {
   const home = await homeDir();
@@ -53,4 +53,29 @@ async function saveSongs(songs: Song[]): Promise<void> {
   await writeTextFile(filePath, JSON.stringify(songs, null, 2));
 }
 
-export { ensureBragiFolders, loadPlaylists, savePlaylists, loadSongs, saveSongs, getBragiDir };
+
+const PREFERENCES_FILE = 'settings_user_preferrences.json';
+
+async function loadPreferences(): Promise<UserPreferences> {
+  const bragiDir = await getBragiDir();
+  const filePath = await join(bragiDir, PREFERENCES_FILE);
+
+  if (!(await exists(filePath))) {
+    return { colors: {} };
+  }
+  try {
+    const parsed = JSON.parse(await readTextFile(filePath));
+    return { colors: parsed.colors ?? {} };
+  } catch {
+    // unreadable or corrupted file: start from the defaults instead of crashing the app
+    return { colors: {} };
+  }
+}
+
+async function savePreferences(preferences: UserPreferences): Promise<void> {
+  const bragiDir = await getBragiDir();
+  const filePath = await join(bragiDir, PREFERENCES_FILE);
+  await writeTextFile(filePath, JSON.stringify(preferences, null, 2));
+}
+
+export { ensureBragiFolders, loadPlaylists, savePlaylists, loadSongs, saveSongs, loadPreferences, savePreferences, getBragiDir };

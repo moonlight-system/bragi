@@ -14,7 +14,7 @@ import { Visualizer } from "../Visualizer";
 import { EditableLabel } from "../EditableLabel";
 import type { ItemEditor } from "../CursorList";
 
-type FocusColumn = "playlists" | "songs" | "player";
+type FocusColumn = "playlists" | "songs";
 
 function SongListItem({ song, selected, editor }: {
   song: Song;
@@ -26,7 +26,7 @@ function SongListItem({ song, selected, editor }: {
       <div style={{ color: selected ? "var(--songs-accent-color)" : "var(--text-color)" }}>
         <EditableLabel value={song.name} field="name" editor={editor} />
       </div>
-      <div style={{ color: "grey" }}>
+      <div className="song_artist_name" style={{ color: "grey" }}>
         <EditableLabel value={song.artist} field="artist" editor={editor} />
       </div>
     </div>
@@ -169,13 +169,9 @@ function HomeScreen({
       if (isTyping) return;
 
       if (event.code === "ArrowRight" && viewedPlaylist) {
-        setFocusedColumn(prev =>
-          prev === "playlists" ? "songs"
-          : prev === "songs" && player.hasPlayed ? "player"
-          : prev
-        );
+        setFocusedColumn("songs");
       } else if (event.code === "ArrowLeft") {
-        setFocusedColumn(prev => (prev === "player" ? "songs" : prev === "songs" ? "playlists" : prev));
+        setFocusedColumn("playlists");
       } else if (event.key === "s") {
         onSwitchToSettingsScreen();
       } else if (event.key === "a" && viewedPlaylist){
@@ -258,7 +254,10 @@ function HomeScreen({
               ]}
               onDelete={(song) => onRemoveSong(song, viewedPlaylist)}
               onReorder={(song, direction) => onMoveSong(song, viewedPlaylist, direction)}
-              onActivate={(song) => player.playSong(song, viewedPlaylist)}
+              onActivate={(song) => {
+                setFocusedColumn("songs");
+                player.playSong(song, viewedPlaylist);
+              }}
             />
           )}
 
@@ -275,7 +274,7 @@ function HomeScreen({
           )}
         </div>)}
 
-        {player.hasPlayed && (<div className="panel main_player" style={{borderTop: focusedColumn==="player" ? "0.2rem solid var(--song-name-accent-color)" : "0.2rem solid transparent"}}>
+        {player.hasPlayed && (<div className="panel main_player">
           <div className="visualizer_area">
             <Visualizer />
           </div>

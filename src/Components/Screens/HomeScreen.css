@@ -173,6 +173,8 @@
     color: grey;
 }
 
+
+
 .visualizer_area {
     flex: 1;              /* takes all the space left above the group */
     min-height: 0;
@@ -194,4 +196,8 @@
     white-space: nowrap;  /* a long title gets "..." instead of wrapping */
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.song_artist_name{
+    font-size: 1.2rem !important;
 }

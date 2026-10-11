@@ -21,3 +21,7 @@ export function formatTime(seconds: number): string {
   const secs = total % 60;
   return `${minutes}:${secs.toString().padStart(2, "0")}`;
 }
+
+export type UserPreferences = {
+  colors: Record<string, string>;   // CSS variable name -> color, only the ones the user has set
+};

@@ -5,8 +5,8 @@ import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { HomeScreen } from './Components/Screens/HomeScreen';
 import { SettingsScreen } from './Components/Screens/SettingsScreen';
-import { ensureBragiFolders, loadPlaylists, savePlaylists, loadSongs, saveSongs } from './storage';
-import type { Playlist, Song } from './types_and_functions';
+import { ensureBragiFolders, loadPlaylists, savePlaylists, loadSongs, saveSongs, loadPreferences, savePreferences } from './storage';
+import type { Playlist, Song, UserPreferences } from './types_and_functions';
 import { usePlayer } from './usePlayer';
 
 
@@ -21,15 +21,25 @@ function App() {
   const [songs, setSongs] = useState<Song[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
+  const [preferences, setPreferences] = useState<UserPreferences>({ colors: {} });
+
   const player = usePlayer(songs);
 
   // load once on startup
   useEffect(() => {
     async function init() {
       await ensureBragiFolders();
-      const [loadedPlaylists, loadedSongs] = await Promise.all([loadPlaylists(), loadSongs()]);
+      const [loadedPlaylists, loadedSongs, loadedPreferences] = await Promise.all([
+        loadPlaylists(), loadSongs(), loadPreferences(),
+      ]);
       setPlaylists(loadedPlaylists);
       setSongs(loadedSongs);
+
+      // apply the saved theme: Settings reads these CSS variables when it opens
+      for (const [variable, value] of Object.entries(loadedPreferences.colors)) {
+        if (variable.startsWith("--")) document.documentElement.style.setProperty(variable, value);
+      }
+      setPreferences(loadedPreferences);
       setIsLoaded(true);
     }
     init();
@@ -48,6 +58,14 @@ function App() {
       saveSongs(songs);
     }
   }, [songs, isLoaded]);
+
+  // save preferences whenever they change; it waits a moment because dragging in a
+  // color picker changes the color many times per second
+  useEffect(() => {
+    if (!isLoaded) return;
+    const timer = setTimeout(() => savePreferences(preferences), 400);
+    return () => clearTimeout(timer);
+  }, [preferences, isLoaded]);
 
   // check for app updates once on startup
   useEffect(() => {
@@ -92,6 +110,9 @@ function App() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [player]);
 
+  function updateColors(changes: Record<string, string>) {
+    setPreferences(prev => ({ ...prev, colors: { ...prev.colors, ...changes } }));
+  }
 
   function switchToHomeScreen() {
     setCurrentScreen("HomeScreen");
@@ -226,7 +247,7 @@ function App() {
         />
       )}
       {currentScreen == "SettingsScreen" && (
-        <SettingsScreen onswitchToHomeScreen={switchToHomeScreen} />
+        <SettingsScreen onswitchToHomeScreen={switchToHomeScreen} onColorsChange={updateColors}/>
       )}
     </div>
   );
