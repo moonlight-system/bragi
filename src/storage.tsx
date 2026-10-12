@@ -1,10 +1,10 @@
 import { readTextFile, writeTextFile, exists, mkdir } from '@tauri-apps/plugin-fs';
-import { homeDir, join } from '@tauri-apps/api/path';
 import type { Playlist, Song, UserPreferences } from './types_and_functions';
+import { appDataDir, homeDir, join } from '@tauri-apps/api/path';
+const isAndroid = navigator.userAgent.includes('Android');
 
 async function getBragiDir() {
-  const home = await homeDir();
-  return join(home, 'Bragi');
+  return isAndroid ? appDataDir() : join(await homeDir(), 'Bragi');
 }
 
 async function ensureBragiFolders() {

@@ -8,6 +8,7 @@ import { SettingsScreen } from './Components/Screens/SettingsScreen';
 import { ensureBragiFolders, loadPlaylists, savePlaylists, loadSongs, saveSongs, loadPreferences, savePreferences } from './storage';
 import type { Playlist, Song, UserPreferences } from './types_and_functions';
 import { usePlayer } from './usePlayer';
+import { isAndroid, newId } from './types_and_functions';
 
 
 function App() {
@@ -70,6 +71,7 @@ function App() {
   // check for app updates once on startup
   useEffect(() => {
     async function checkForUpdates() {
+      if (isAndroid) return;
       try {
         const update = await check();
         if (update) {
@@ -123,7 +125,7 @@ function App() {
   }
 
   function createPlaylist(name: string) {
-    const newPlaylist: Playlist = { id: crypto.randomUUID(), name, songIds: [] };
+    const newPlaylist: Playlist = { id: newId(), name, songIds: [] };
     setPlaylists(prevList => [newPlaylist, ...prevList]);
   }
 

@@ -12,8 +12,9 @@ import { ProgressBar } from "../ProgressBar";
 import { Visualizer } from "../Visualizer";
 import { EditableLabel } from "../EditableLabel";
 import type { ItemEditor } from "../CursorList";
-import { copyFile, readFile } from '@tauri-apps/plugin-fs';
 import { parseBuffer } from 'music-metadata';
+import { copyFile, readFile, writeFile } from '@tauri-apps/plugin-fs';
+import { isAndroid, newId } from '../../types_and_functions';
 
 type FocusColumn = "playlists" | "songs";
 
@@ -53,14 +54,13 @@ function PlayerButton({ label, onClick, active = false }: {
   }
 
 // reads the artist from the mp3's tags (ID3); null if the file has none or can't be read
-async function readArtistTag(filePath: string): Promise<string | null> {
+async function readTags(bytes: Uint8Array): Promise<{ title: string | null; artist: string | null }> {
   try {
-    const bytes = await readFile(filePath);
     const meta = await parseBuffer(bytes, { mimeType: 'audio/mpeg' }, { duration: false, skipCovers: true });
-    return meta.common.artist?.trim() || null;
+    return { title: meta.common.title?.trim() || null, artist: meta.common.artist?.trim() || null };
   } catch (err) {
     console.error('could not read tags:', err);
-    return null;
+    return { title: null, artist: null };
   }
 }
 
@@ -154,19 +154,20 @@ function HomeScreen({
     if (!selected) return; // user cancelled
     const paths = Array.isArray(selected) ? selected : [selected];
 
+    const bragiDir = await getBragiDir();
     const newSongs: Song[] = [];
     for (const sourcePath of paths) {
-      const id = crypto.randomUUID();
-      const bragiDir = await getBragiDir();
-      const destPath = await join(bragiDir, 'songs', `${id}.mp3`);
-      await copyFile(sourcePath, destPath);
-      const artist = await readArtistTag(destPath);
+      const id = newId();
+      const bytes = await readFile(sourcePath);
+      await writeFile(await join(bragiDir, 'songs', `${id}.mp3`), bytes);
+      const { title, artist } = await readTags(bytes);
 
       const fileName = sourcePath.split(/[\\/]/).pop() ?? 'Unknown';
       newSongs.push({
         id,
         path: `${id}.mp3`,
-        name: fileName.replace(/\.mp3$/i, ''),
+        // desktop keeps using the file name; on Android the "file name" is meaningless, so use the tag
+        name: isAndroid ? (title ?? 'Unknown') : fileName.replace(/\.mp3$/i, ''),
         artist: artist ?? 'Unknown Artist',
       });
     }
