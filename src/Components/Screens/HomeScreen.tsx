@@ -13,7 +13,7 @@ import { Visualizer } from "../Visualizer";
 import { EditableLabel } from "../EditableLabel";
 import type { ItemEditor } from "../CursorList";
 import { parseBuffer } from 'music-metadata';
-import { copyFile, readFile, writeFile } from '@tauri-apps/plugin-fs';
+import { readFile, writeFile } from '@tauri-apps/plugin-fs';
 import { isAndroid, newId } from '../../types_and_functions';
 
 type FocusColumn = "playlists" | "songs";

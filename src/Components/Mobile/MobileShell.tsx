@@ -1,5 +1,5 @@
 import "./Mobile.css";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMobileNav } from "../../useMobileNav";
 import type { Playlist, Song } from "../../types_and_functions";
 import type { Player } from "../../usePlayer";
@@ -42,8 +42,41 @@ function MobileShell({ playlists, songs, player, onColorsChange, actions }: {
   const [viewedPlaylistId, setViewedPlaylistId] = useState<string | null>(null);
   const viewedPlaylist = playlists.find(p => p.id === viewedPlaylistId) ?? null;
 
-  const [modal, setModal] = useState<Modal>(null);
-  const close = () => setModal(null);
+  const [modal, setModalRaw] = useState<Modal>(null);
+  const modalRef = useRef<Modal>(null);   // always-current copy, read right after an action runs
+
+  // every existing setModal({...}) call now also opens the history entry
+  function setModal(m: Modal) {
+    modalRef.current = m;
+    setModalRaw(m);
+    if (m) nav.openModal();
+  }
+
+  // dismiss from the screen (overlay tap, Cancel, OK): pop the dialog's history entry
+  function close() {
+    modalRef.current = null;
+    setModalRaw(null);
+    nav.closeModal();
+  }
+
+  // run a sheet action; if it didn't open another dialog, pop the history entry
+  function runAction(fn: () => void) {
+    modalRef.current = null;
+    setModalRaw(null);
+    fn();
+    if (modalRef.current === null) nav.closeModal();
+  }
+
+  const sheetActions = (list: SheetAction[]): SheetAction[] =>
+    list.map(a => ({ ...a, onPick: () => runAction(a.onPick) }));
+
+  // the system back button popped the entry: make sure the dialog is gone
+  useEffect(() => {
+    if (!nav.modalOpen) {
+      modalRef.current = null;
+      setModalRaw(null);
+    }
+  }, [nav.modalOpen]);
 
   const [importing, setImporting] = useState(false);
 
@@ -109,15 +142,18 @@ function MobileShell({ playlists, songs, player, onColorsChange, actions }: {
     nav.screen === "player" ? "Now playing" :
     "Settings";
 
-  const showBackButton = nav.screen === "songs" || nav.screen === "player";
-  const showTabBar = nav.screen !== "player";
-  const activeTab = nav.screen === "settings" ? "settings" : "playlists";
+  const showBackButton = nav.screen === "songs" || nav.screen === "player" || nav.screen === "settings";
+  // the gear is hidden on the player and on settings itself
+  const showSettingsButton = nav.screen === "playlists" || nav.screen === "songs";
 
   return (
     <div className="m_shell">
         <header className="m_topbar">
-            {showBackButton && <button className="app_button m_back" onClick={nav.back}>‹</button>}
-            <div className="m_title">{title}</div>
+          {showBackButton && <button className="app_button m_back" onClick={nav.back}>‹</button>}
+          <div className="m_title">{title}</div>
+          {showSettingsButton && (
+            <button className="app_button m_header_btn" onClick={() => nav.push("settings")} aria-label="Settings">⚙</button>
+          )}
         </header>
 
         <div className="m_content_wrap">
@@ -145,6 +181,9 @@ function MobileShell({ playlists, songs, player, onColorsChange, actions }: {
           {showFab && (
             <button className="m_fab" onClick={onFab} aria-label="Add">+</button>
           )}
+          {nav.screen === "songs" && (
+            <button className="m_fab m_fab_left" onClick={nav.back} aria-label="Back to playlists">‹</button>
+          )}
 
           {importing && <div className="m_importing">Importing…</div>}
         </div>
@@ -153,32 +192,18 @@ function MobileShell({ playlists, songs, player, onColorsChange, actions }: {
           <MiniPlayer player={player} onOpen={() => nav.push("player")} />
         )}
   
-  
-        {showTabBar && (
-          <nav className="m_tabbar">
-            <button
-              className={`m_tab ${activeTab === "playlists" ? "m_tab_active" : ""}`}
-              onClick={nav.goToRoot}
-            >Playlists</button>
-            <button
-              className={`m_tab ${activeTab === "settings" ? "m_tab_active" : ""}`}
-              onClick={() => { if (nav.screen !== "settings") nav.push("settings"); }}
-            >Settings</button>
-          </nav>
-        )}
-  
         {modal?.kind === "playlistMenu" && (
-          <ActionSheet title={modal.playlist.name} actions={playlistMenuActions(modal.playlist)} onClose={close} />
+          <ActionSheet title={modal.playlist.name} actions={sheetActions(playlistMenuActions(modal.playlist))} onClose={close} />
         )}
         {modal?.kind === "songMenu" && (
-          <ActionSheet title={modal.song.name} actions={songMenuActions(modal.song)} onClose={close} />
+          <ActionSheet title={modal.song.name} actions={sheetActions(songMenuActions(modal.song))} onClose={close} />
         )}
         {modal?.kind === "copyPicker" && viewedPlaylist && (
           <ActionSheet
             title={`Add "${modal.song.name}" to:`}
-            actions={playlists
+            actions={sheetActions(playlists
               .filter(p => p.id !== viewedPlaylist.id)
-              .map(p => ({ label: p.name, onPick: () => actions.copySong(modal.song, p) }))}
+              .map(p => ({ label: p.name, onPick: () => actions.copySong(modal.song, p) })))}
             onClose={close}
           />
         )}

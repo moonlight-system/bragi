@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export type SheetAction = { label: string; onPick: () => void; danger?: boolean };
 
@@ -17,7 +17,7 @@ function ActionSheet({ title, actions, onClose }: {
             key={a.label}
             className={`m_sheet_btn ${a.danger ? "m_sheet_danger" : ""}`}
             // close first, then run: if the action opens another dialog, that one wins
-            onClick={() => { onClose(); a.onPick(); }}
+            onClick={a.onPick}
           >{a.label}</button>
         ))}
       </div>
@@ -33,6 +33,10 @@ function TextPrompt({ title, initial = "", onSubmit, onClose }: {
   onClose: () => void;
 }) {
   const [value, setValue] = useState(initial);
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    inputRef.current?.focus({ preventScroll: true });
+  }, []);
 
   function submit() {
     const trimmed = value.trim();
@@ -46,7 +50,7 @@ function TextPrompt({ title, initial = "", onSubmit, onClose }: {
         <div className="m_sheet_title">{title}</div>
         <input
           className="app_input m_dialog_input"
-          autoFocus
+          ref={inputRef}
           value={value}
           onFocus={(e) => e.target.select()}
           onChange={(e) => setValue(e.target.value)}

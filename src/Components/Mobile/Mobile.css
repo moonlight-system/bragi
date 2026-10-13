@@ -18,6 +18,7 @@
 }
 .m_back { font-size: 1.6rem; padding: 0.1rem 0.9rem; }
 .m_title {
+  flex: 1; min-width: 0;
   color: var(--title-accent-color);
   font-size: 1.5rem;
   overflow: hidden;
@@ -234,4 +235,23 @@
   border-radius: 4px;
   background-color: var(--tertiary-bg-color);
   color: var(--playlist-accent-color);
+}
+
+.m_fab_left {
+  right: auto;
+  left: 1.25rem;
+}
+
+.m_header_btn {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-size: 1.4rem;
+  padding: 0.1rem 0.9rem;
+  letter-spacing: 0;
+}
+
+/* the "Importing…" label used the bottom-left corner, which the "‹" button now occupies */
+.m_importing {
+  left: 50%;
+  transform: translateX(-50%);
 }

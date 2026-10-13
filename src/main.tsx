@@ -20,3 +20,16 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <App />
   </React.StrictMode>,
 );
+
+if (isAndroid) {
+  // the keyboard is open when the visible area is much shorter than the layout
+  const keyboardOpen = () =>
+    (window.visualViewport?.height ?? window.innerHeight) < window.innerHeight - 100;
+
+  // while it is, dragging would pan the visible area over the layout: cancel the drag
+  document.addEventListener(
+    "touchmove",
+    (e) => { if (keyboardOpen()) e.preventDefault(); },
+    { passive: false }
+  );
+}

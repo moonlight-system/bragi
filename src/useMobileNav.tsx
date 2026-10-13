@@ -1,16 +1,25 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export type MobileScreen = "playlists" | "songs" | "player" | "settings";
 
 export function useMobileNav() {
   const [stack, setStack] = useState<MobileScreen[]>(["playlists"]);
+  const [modalOpen, setModalOpenState] = useState(false);
+  // mirror of modalOpen that is always current, even between two renders
+  const modalOpenRef = useRef(false);
+
+  function setModalOpen(open: boolean) {
+    modalOpenRef.current = open;
+    setModalOpenState(open);
+  }
 
   useEffect(() => {
-    // tag the entry we start on, so coming back to it restores the right stack
-    history.replaceState({ stack: ["playlists"] }, "");
+    // tag the entry we start on, so coming back to it restores the right state
+    history.replaceState({ stack: ["playlists"], modal: false }, "");
 
     function onPopState(event: PopStateEvent) {
       setStack(event.state?.stack ?? ["playlists"]);
+      setModalOpen(!!event.state?.modal);
     }
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
@@ -18,12 +27,14 @@ export function useMobileNav() {
 
   function push(screen: MobileScreen) {
     const next = [...stack, screen];
-    history.pushState({ stack: next }, "");
+    history.pushState({ stack: next, modal: false }, "");
     setStack(next);
+    setModalOpen(false);
   }
 
   function back() {
-    if (stack.length > 1) history.back();
+    // with a dialog open, this pops the dialog's entry first
+    if (modalOpenRef.current || stack.length > 1) history.back();
   }
 
   // used by the Playlists tab: pop everything above the root screen
@@ -31,5 +42,16 @@ export function useMobileNav() {
     if (stack.length > 1) history.go(-(stack.length - 1));
   }
 
-  return { screen: stack[stack.length - 1], stack, push, back, goToRoot };
+  // a dialog gets its own history entry (same screen stack, modal flag on)
+  function openModal() {
+    if (modalOpenRef.current) return;   // already open: reuse its entry
+    history.pushState({ stack, modal: true }, "");
+    setModalOpen(true);
+  }
+
+  function closeModal() {
+    if (modalOpenRef.current) history.back();   // popstate then clears the flag
+  }
+
+  return { screen: stack[stack.length - 1], stack, push, back, goToRoot, modalOpen, openModal, closeModal };
 }
