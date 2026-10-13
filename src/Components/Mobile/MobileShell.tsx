@@ -9,12 +9,15 @@ import { MiniPlayer } from "./MiniPlayer";
 import { ActionSheet, TextPrompt } from "./Sheets";
 import type { SheetAction } from "./Sheets";
 import { pickSongs } from "../../importSongs";
+import { pickCover } from "../../pickCover";
+import { ChevronLeft, Plus, Settings } from "lucide-react";
 
 export type MobileActions = {
   createPlaylist: (name: string) => void;
   deletePlaylist: (playlist: Playlist) => void;
   renamePlaylist: (playlist: Playlist, newName: string) => void;
   movePlaylist: (playlist: Playlist, direction: "up" | "down") => void;
+  setCover: (playlist: Playlist, cover: string | null) => void;
   addSongs: (newSongs: Song[], targetPlaylist: Playlist) => void;
   renameSong: (song: Song, newName: string) => void;
   renameArtist: (song: Song, newArtist: string) => void;
@@ -31,12 +34,14 @@ type Modal =
   | { kind: "prompt"; title: string; initial?: string; onSubmit: (value: string) => void }
   | null;
 
-function MobileShell({ playlists, songs, player, onColorsChange, actions }: {
+function MobileShell({ playlists, songs, player, onColorsChange, actions, backOnRight, onBackOnRightChange }: {
   playlists: Playlist[];
   songs: Song[];
   player: Player;
   onColorsChange: (changes: Record<string, string>) => void;
   actions: MobileActions;
+  backOnRight: boolean;
+  onBackOnRightChange: (value: boolean) => void;
 }) {
   const nav = useMobileNav();
   const [viewedPlaylistId, setViewedPlaylistId] = useState<string | null>(null);
@@ -101,6 +106,15 @@ function MobileShell({ playlists, songs, player, onColorsChange, actions }: {
     }
   }
 
+  async function chooseCover(playlist: Playlist) {
+    try {
+      const cover = await pickCover();
+      if (cover) actions.setCover(playlist, cover);
+    } catch (err) {
+      console.error("cover failed:", err);
+    }
+  }
+
   function playlistMenuActions(p: Playlist): SheetAction[] {
     const index = playlists.findIndex(x => x.id === p.id);
     const list: SheetAction[] = [
@@ -108,6 +122,7 @@ function MobileShell({ playlists, songs, player, onColorsChange, actions }: {
           kind: "prompt", title: "Rename playlist", initial: p.name,
           onSubmit: (name) => actions.renamePlaylist(p, name),
       }) },
+      { label: p.cover ? "Change cover image" : "Set cover image", onPick: () => chooseCover(p) },
     ];
     if (index > 0) list.push({ label: "Move up", onPick: () => actions.movePlaylist(p, "up") });
     if (index < playlists.length - 1) list.push({ label: "Move down", onPick: () => actions.movePlaylist(p, "down") });
@@ -149,10 +164,14 @@ function MobileShell({ playlists, songs, player, onColorsChange, actions }: {
   return (
     <div className="m_shell">
         <header className="m_topbar">
-          {showBackButton && <button className="app_button m_back" onClick={nav.back}>‹</button>}
+          {showBackButton && <button className="app_button m_back" onClick={nav.back}>
+              <ChevronLeft size={28} />
+            </button>}
           <div className="m_title">{title}</div>
           {showSettingsButton && (
-            <button className="app_button m_header_btn" onClick={() => nav.push("settings")} aria-label="Settings">⚙</button>
+            <button className="app_button m_header_btn" onClick={() => nav.push("settings")} aria-label="Settings">
+              <Settings size={22} />
+            </button>
           )}
         </header>
 
@@ -175,14 +194,22 @@ function MobileShell({ playlists, songs, player, onColorsChange, actions }: {
               />
             )}
             {nav.screen === "player" && <MobilePlayerScreen player={player} />}
-            {nav.screen === "settings" && <MobileSettings onColorsChange={onColorsChange} />}
+            {nav.screen === "settings" && (
+              <MobileSettings onColorsChange={onColorsChange} backOnRight={backOnRight} onBackOnRightChange={onBackOnRightChange} />
+            )}
           </main>
   
           {showFab && (
-            <button className="m_fab" onClick={onFab} aria-label="Add">+</button>
+            <button className="m_fab" onClick={onFab} aria-label="Add">
+              <Plus size={30} strokeWidth={4} />
+            </button>
           )}
           {nav.screen === "songs" && (
-            <button className="m_fab m_fab_left" onClick={nav.back} aria-label="Back to playlists">‹</button>
+            <button
+              className={`m_fab ${backOnRight ? "m_fab_beside" : "m_fab_left"}`}
+              onClick={nav.back}
+              aria-label="Back to playlists"
+            ><ChevronLeft size={30} strokeWidth={4} /></button>
           )}
 
           {importing && <div className="m_importing">Importing…</div>}

@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { EllipsisVertical } from "lucide-react";
 
 function PressableRow({ className, onTap, onMenu, children }: {
   className: string;
@@ -43,7 +44,9 @@ function PressableRow({ className, onTap, onMenu, children }: {
         aria-label="Options"
         onPointerDown={(e) => e.stopPropagation()}   // don't start the long-press timer
         onClick={(e) => { e.stopPropagation(); onMenu(); }}
-      >⋮</button>
+      >
+        <EllipsisVertical size={22} />
+      </button>
     </div>
   );
 }

@@ -37,11 +37,6 @@ export function useMobileNav() {
     if (modalOpenRef.current || stack.length > 1) history.back();
   }
 
-  // used by the Playlists tab: pop everything above the root screen
-  function goToRoot() {
-    if (stack.length > 1) history.go(-(stack.length - 1));
-  }
-
   // a dialog gets its own history entry (same screen stack, modal flag on)
   function openModal() {
     if (modalOpenRef.current) return;   // already open: reuse its entry
@@ -53,5 +48,5 @@ export function useMobileNav() {
     if (modalOpenRef.current) history.back();   // popstate then clears the flag
   }
 
-  return { screen: stack[stack.length - 1], stack, push, back, goToRoot, modalOpen, openModal, closeModal };
+  return { screen: stack[stack.length - 1], stack, push, back, modalOpen, openModal, closeModal };
 }

@@ -1,9 +1,8 @@
-import { open } from '@tauri-apps/plugin-dialog';
 import { join } from '@tauri-apps/api/path';
-import { readFile, writeFile } from '@tauri-apps/plugin-fs';
+import { writeFile } from '@tauri-apps/plugin-fs';
 import { parseBuffer } from 'music-metadata';
 import { getBragiDir } from './storage';
-import { isAndroid, newId } from './types_and_functions';
+import { newId } from './types_and_functions';
 import type { Song } from './types_and_functions';
 
 async function readTags(bytes: Uint8Array): Promise<{ title: string | null; artist: string | null }> {
@@ -19,46 +18,33 @@ async function readTags(bytes: Uint8Array): Promise<{ title: string | null; arti
   }
 }
 
-// Android gives URIs like content://.../primary%3AMusic%2Ffoo.mp3: decode, then take the last piece
-function nameFromPath(path: string): string | null {
-  try {
-    const last = decodeURIComponent(path).split(/[\\/:]/).pop() ?? '';
-    return /\.mp3$/i.test(last) ? last.replace(/\.mp3$/i, '') : null;
-  } catch {
-    return null;
-  }
-}
-
-// opens the file picker and imports the chosen mp3s; calls onSong as each one finishes
+// opens the system file picker and imports the chosen mp3s; calls onSong as each one finishes
 export async function pickSongs(onSong: (song: Song) => void): Promise<void> {
-  const selected = await open({
-    multiple: true,
-    filters: [{ name: 'Audio', extensions: ['mp3'] }],
+  // must be created and clicked synchronously, inside the tap that triggered the import
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'audio/mpeg,.mp3';
+  input.multiple = true;
+
+  const files = await new Promise<File[]>((resolve) => {
+    input.addEventListener('change', () => resolve(Array.from(input.files ?? [])));
+    input.addEventListener('cancel', () => resolve([]));
+    input.click();
   });
-  if (!selected) return;   // user cancelled
-  const paths = Array.isArray(selected) ? selected : [selected];
+  if (files.length === 0) return;
 
   const bragiDir = await getBragiDir();
-  for (const sourcePath of paths) {
-    const t0 = performance.now();
+  for (const file of files) {
     const id = newId();
-    console.log('source:', sourcePath);
-    const bytes = await readFile(sourcePath);
-    const t1 = performance.now();
+    const bytes = new Uint8Array(await file.arrayBuffer());
     const dest = await join(bragiDir, 'songs', `${id}.mp3`);
-    const [, { title, artist }] = await Promise.all([writeFile(dest, bytes), readTags(bytes)]);
-    const t2 = performance.now();
-    const t3 = performance.now();
-    console.log(
-      `import: ${(bytes.length / 1e6).toFixed(1)}MB | read ${Math.round(t1 - t0)}ms | ` +
-      `write ${Math.round(t2 - t1)}ms | tags ${Math.round(t3 - t2)}ms`
-    );
 
-    const fileName = sourcePath.split(/[\\/]/).pop() ?? 'Unknown';
+    const [, { title, artist }] = await Promise.all([writeFile(dest, bytes), readTags(bytes)]);
+
     onSong({
       id,
       path: `${id}.mp3`,
-      name: isAndroid ? (title ?? nameFromPath(sourcePath) ?? 'Unknown') : fileName.replace(/\.mp3$/i, ''),
+      name: title ?? file.name.replace(/\.mp3$/i, ''),
       artist: artist ?? 'Unknown Artist',
     });
   }

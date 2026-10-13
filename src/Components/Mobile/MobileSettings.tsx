@@ -2,8 +2,10 @@ import { useState } from "react";
 import { THEME_PRESETS } from "../Screens/SettingsScreen";
 import { getCssVariable } from "../../types_and_functions";
 
-function MobileSettings({ onColorsChange }: {
+function MobileSettings({ onColorsChange, backOnRight, onBackOnRightChange }: {
   onColorsChange: (changes: Record<string, string>) => void;
+  backOnRight: boolean;
+  onBackOnRightChange: (value: boolean) => void;
 }) {
   // the preset matching the current CSS variables (empty = "Custom")
   const [active, setActive] = useState(() =>
@@ -34,6 +36,16 @@ function MobileSettings({ onColorsChange }: {
             <option key={preset.name} value={preset.name}>{preset.name}</option>
           ))}
         </select>
+      </div>
+
+      <div className="m_setting_row" style={{ marginTop: "1.5rem" }}>
+        <div>Back button on the right</div>
+        <input
+          type="checkbox"
+          className="m_checkbox"
+          checked={backOnRight}
+          onChange={(e) => onBackOnRightChange(e.target.checked)}
+        />
       </div>
     </div>
   );

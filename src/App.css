@@ -90,7 +90,12 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+@media (hover: hover) {
+  button:hover {
+    background-color: var(--secondary-bg-color);
+  }
+}
+button:active {
   background-color: var(--secondary-bg-color);
 }
 

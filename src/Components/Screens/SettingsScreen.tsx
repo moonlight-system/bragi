@@ -73,13 +73,6 @@ const THEME_PRESETS: ThemePreset[] = [
     { name: "Bragi", colors: buildPreset("#00ff9d", ["#25252B", "#1c1c20", "#141418"], "#ffffff") },
     { name: "Midnight", colors: buildPreset("#5c7aff", ["#1b1f33", "#151827", "#0f1220"], "#ffffff") },
     {
-        name: "Angel",
-        colors: buildPreset("#009baf", ["#f4f2ee", "#dae5e6", "#becccf"], "#2b2b2e", {
-            "--title-accent-color": "#009baf",
-            "--visualizer-accent-color": "#009baf",
-        }),
-    },
-    {
         name: "Sunset",
         colors: buildPreset("#ff9f50", ["#2a1f26", "#221a20", "#1a1418"], "#ffffff", {
             "--title-accent-color": "#ff4848",
@@ -88,31 +81,10 @@ const THEME_PRESETS: ThemePreset[] = [
         }),
     },
     {
-        name: "Latte",
-        colors: buildPreset("#a55c2e", ["#efe3d0", "#e1d0b8", "#d2bd9f"], "#3b2a20", {
-            "--title-accent-color": "#a55c2e",
-            "--visualizer-accent-color": "#e6b251",
-        }),
-    },
-    {
         name: "Espresso",
         colors: buildPreset("#d9a066", ["#2b1f19", "#231915", "#1a110e"], "#efe3d0", {
             "--title-accent-color": "#f2d3a4",
             "--visualizer-accent-color": "#c8864a",
-        }),
-    },
-    {
-        name: "Mango",
-        colors: buildPreset("#c9341c", ["#FFF1D6", "#FFE0B0", "#FFCB91"], "#3d1f14", {
-            "--title-accent-color": "#a3260f",
-            "--visualizer-accent-color": "#f26b1d",
-        }),
-    },
-    {
-        name: "Trans rights !!",
-        colors: buildPreset("#FF0087", ["#B0FFFA", "#75ffff", "#2dcadf"], "#3b1030", {
-            "--title-accent-color": "#ff1893",
-            "--visualizer-accent-color": "#FF7DB0",
         }),
     },
     {
@@ -138,13 +110,6 @@ const THEME_PRESETS: ThemePreset[] = [
         }),
     },
     {
-        name: "Matcha",
-        colors: buildPreset("#3f6b2a", ["#e8efd9", "#d8e3c2", "#c6d4a8"], "#25331b", {
-            "--title-accent-color": "#2a4a1a",
-            "--visualizer-accent-color": "#6a994e",
-        }),
-    },
-    {
         name: "Graphite",
         colors: buildPreset("#f5f5f5", ["#262626", "#1c1c1c", "#121212"], "#a8a8a8", {
             "--title-accent-color": "#ffffff",
@@ -166,16 +131,52 @@ const THEME_PRESETS: ThemePreset[] = [
         }),
     },
     {
+        name: "Amber",
+        colors: buildPreset("#ffcc4d", ["#17120b", "#110d08", "#0b0805"], "#a87927", {
+            "--visualizer-accent-color": "#ffa726",
+        }),
+    },
+
+    {
+        name: "Angel",
+        colors: buildPreset("#009baf", ["#f4f2ee", "#dae5e6", "#becccf"], "#2b2b2e", {
+            "--title-accent-color": "#009baf",
+            "--visualizer-accent-color": "#009baf",
+        }),
+    },
+    {
+        name: "Latte",
+        colors: buildPreset("#a55c2e", ["#efe3d0", "#e1d0b8", "#d2bd9f"], "#3b2a20", {
+            "--title-accent-color": "#a55c2e",
+            "--visualizer-accent-color": "#e6b251",
+        }),
+    },
+    {
+        name: "Mango",
+        colors: buildPreset("#c9341c", ["#FFF1D6", "#FFE0B0", "#FFCB91"], "#3d1f14", {
+            "--title-accent-color": "#a3260f",
+            "--visualizer-accent-color": "#f26b1d",
+        }),
+    },
+    {
+        name: "Trans rights !!",
+        colors: buildPreset("#FF0087", ["#B0FFFA", "#75ffff", "#2dcadf"], "#3b1030", {
+            "--title-accent-color": "#ff1893",
+            "--visualizer-accent-color": "#FF7DB0",
+        }),
+    },
+    {
+        name: "Matcha",
+        colors: buildPreset("#3f6b2a", ["#e8efd9", "#d8e3c2", "#c6d4a8"], "#25331b", {
+            "--title-accent-color": "#2a4a1a",
+            "--visualizer-accent-color": "#6a994e",
+        }),
+    },
+    {
         name: "Lilac",
         colors: buildPreset("#7048b8", ["#f1ecf8", "#e5ddf1", "#d7cbe6"], "#2e2640", {
             "--title-accent-color": "#4f2f8a",
             "--visualizer-accent-color": "#9b7fd4",
-        }),
-    },
-    {
-        name: "Amber",
-        colors: buildPreset("#ffcc4d", ["#17120b", "#110d08", "#0b0805"], "#a87927", {
-            "--visualizer-accent-color": "#ffa726",
         }),
     },
     {

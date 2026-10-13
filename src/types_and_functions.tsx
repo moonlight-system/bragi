@@ -9,6 +9,7 @@ export type Playlist = {
   id: string;
   name: string;
   songIds: string[];
+  cover?: string;   // data URL of the cover image, if the user set one
 };
 
 export function getCssVariable(name: string): string {
@@ -23,7 +24,8 @@ export function formatTime(seconds: number): string {
 }
 
 export type UserPreferences = {
-  colors: Record<string, string>;   // CSS variable name -> color, only the ones the user has set
+  colors: Record<string, string>;
+  backOnRight?: boolean;
 };
 
 export const isAndroid = navigator.userAgent.includes('Android');

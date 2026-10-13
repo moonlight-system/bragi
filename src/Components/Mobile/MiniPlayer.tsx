@@ -1,4 +1,5 @@
 import type { Player } from "../../usePlayer";
+import { SkipBack, SkipForward, Play, Pause } from "lucide-react";
 
 function MiniPlayer({ player, onOpen }: {
   player: Player;
@@ -15,17 +16,17 @@ function MiniPlayer({ player, onOpen }: {
 
   return (
     <div className="m_miniplayer" onClick={onOpen}>
-      <div className="m_cover m_cover_small" />
+      {/*<div className="m_cover m_cover_small" />*/}
       <div className="m_mini_text">
         <div className="m_mini_name">{song.name}</div>
         <div className="m_mini_artist">{song.artist}</div>
       </div>
       <div className="m_mini_controls">
-        <button className="m_mini_btn" onClick={press(player.previous)}>«</button>
+        <button className="m_mini_btn" onClick={press(player.previous)}><SkipBack size={22} fill="currentColor" /></button>
         <button className="m_mini_btn" onClick={press(player.togglePlay)}>
-          {player.isPlaying ? "❚❚" : "▶"}
+          {player.isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" />}
         </button>
-        <button className="m_mini_btn" onClick={press(player.next)}>»</button>
+        <button className="m_mini_btn" onClick={press(player.next)}><SkipForward size={22} fill="currentColor" /></button>
       </div>
     </div>
   );

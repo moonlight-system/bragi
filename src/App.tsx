@@ -124,6 +124,10 @@ function App() {
     setPreferences(prev => ({ ...prev, colors: { ...prev.colors, ...changes } }));
   }
 
+  function setBackOnRight(value: boolean) {
+    setPreferences(prev => ({ ...prev, backOnRight: value }));
+  }
+
   function switchToHomeScreen() {
     setCurrentScreen("HomeScreen");
   }
@@ -146,6 +150,12 @@ function App() {
       prev.map(item =>
         item.id === playlistToRename.id ? { ...item, name: newName } : item
       )
+    );
+  }
+
+  function setPlaylistCover(playlistToUpdate: Playlist, cover: string | null) {
+    setPlaylists(prev =>
+      prev.map(p => (p.id === playlistToUpdate.id ? { ...p, cover: cover ?? undefined } : p))
     );
   }
 
@@ -243,6 +253,7 @@ function App() {
             deletePlaylist,
             renamePlaylist,
             movePlaylist,
+            setCover: setPlaylistCover,
             addSongs,
             renameSong,
             renameArtist,
@@ -250,6 +261,8 @@ function App() {
             moveSong,
             copySong: copySongToPlaylist,
           }}
+          backOnRight={preferences.backOnRight ?? false}
+          onBackOnRightChange={setBackOnRight}
         />
       </div>
     );

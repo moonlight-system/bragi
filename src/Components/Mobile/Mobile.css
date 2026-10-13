@@ -58,9 +58,9 @@
 .m_song_name, .m_song_artist { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .m_song_name { color: var(--song-name-accent-color); font-size: 1.5rem; }
 .m_song_artist { color: grey; }
-.m_controls_main { display: flex; justify-content: center; gap: 0.75rem; margin-top: 1.5rem; }
-.m_controls_main .app_button { padding: 0.9rem 1.2rem; }
-.m_play { min-width: 6.5rem; }
+.m_controls_main { display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem; }
+.m_controls_main .app_button { padding: 0.8rem 0; flex: 1; max-width: 4rem; }
+.m_controls_main .m_play { max-width: 5rem; }
 .m_controls_secondary { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin: 1rem 0 1.5rem; }
 
 .m_settings { padding: 1rem 1.25rem; }
@@ -81,6 +81,8 @@
   height: 4rem;
   background-color: var(--tertiary-bg-color);
   border-radius: 4px;
+  background-size: cover;
+  background-position: center;
 }
 .m_cover_small { width: 2.75rem; height: 2.75rem; }
 .m_playlist_text { min-width: 0; }
@@ -255,3 +257,13 @@
   left: 50%;
   transform: translateX(-50%);
 }
+
+.m_back, .m_header_btn, .m_fab, .m_kebab, .m_mini_btn, .m_icon_btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 1.25rem margin + 3.5rem button + 1rem gap */
+.m_fab_beside { right: 5.75rem; }
+.m_checkbox { width: 1.6rem; height: 1.6rem; accent-color: var(--playlist-accent-color); }
