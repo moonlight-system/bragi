@@ -17,7 +17,7 @@
   font-weight: 400;
 
   color: var(--text-color);
-  background-color: #f6f6f6;
+  background-color: var(--primary-bg-color);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -101,4 +101,13 @@ button {
 
 #greet-input {
   margin-right: 5px;
+}
+
+.AppContainer {
+  background-color: var(--primary-bg-color);
+  padding:
+    env(safe-area-inset-top)
+    env(safe-area-inset-right)
+    env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
 }

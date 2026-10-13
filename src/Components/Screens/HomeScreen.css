@@ -201,3 +201,10 @@
 .song_artist_name{
     font-size: 1.2rem !important;
 }
+
+
+/* ANYTHING AFTER THIS LINE IS FOR MOBILE ONLY */
+
+[data-platform="mobile"] .keybinds_footer {
+  display: none;
+}

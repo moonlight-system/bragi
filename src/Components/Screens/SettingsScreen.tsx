@@ -73,7 +73,7 @@ const THEME_PRESETS: ThemePreset[] = [
     { name: "Bragi", colors: buildPreset("#00ff9d", ["#25252B", "#1c1c20", "#141418"], "#ffffff") },
     { name: "Midnight", colors: buildPreset("#5c7aff", ["#1b1f33", "#151827", "#0f1220"], "#ffffff") },
     {
-        name: "Daylight",
+        name: "Angel",
         colors: buildPreset("#009baf", ["#f4f2ee", "#dae5e6", "#becccf"], "#2b2b2e", {
             "--title-accent-color": "#009baf",
             "--visualizer-accent-color": "#009baf",
@@ -102,7 +102,7 @@ const THEME_PRESETS: ThemePreset[] = [
         }),
     },
     {
-        name: "Papaya",
+        name: "Mango",
         colors: buildPreset("#c9341c", ["#FFF1D6", "#FFE0B0", "#FFCB91"], "#3d1f14", {
             "--title-accent-color": "#a3260f",
             "--visualizer-accent-color": "#f26b1d",
@@ -305,4 +305,4 @@ function SettingsScreen({ onswitchToHomeScreen, onColorsChange }: {
 
 }
 
-export {SettingsScreen};
+export {SettingsScreen, THEME_PRESETS};

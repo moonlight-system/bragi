@@ -9,7 +9,7 @@ import { ensureBragiFolders, loadPlaylists, savePlaylists, loadSongs, saveSongs,
 import type { Playlist, Song, UserPreferences } from './types_and_functions';
 import { usePlayer } from './usePlayer';
 import { isAndroid, newId } from './types_and_functions';
-
+import { MobileShell } from './Components/Mobile/MobileShell';
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<"HomeScreen" | "SettingsScreen">("HomeScreen");
@@ -111,6 +111,14 @@ function App() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [player]);
+
+  // synchronous copy of the theme, read by main.tsx before the first paint
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
+      localStorage.setItem("bragi-colors", JSON.stringify(preferences.colors));
+    } catch {}
+  }, [preferences, isLoaded]);
 
   function updateColors(changes: Record<string, string>) {
     setPreferences(prev => ({ ...prev, colors: { ...prev.colors, ...changes } }));
@@ -219,6 +227,31 @@ function App() {
           ? { ...p, songIds: [...p.songIds, song.id] }
           : p
       )
+    );
+  }
+
+  if (isAndroid) {
+    return (
+      <div className="AppContainer">
+        <MobileShell
+          playlists={playlists}
+          songs={songs}
+          player={player}
+          onColorsChange={updateColors}
+          actions={{
+            createPlaylist,
+            deletePlaylist,
+            renamePlaylist,
+            movePlaylist,
+            addSongs,
+            renameSong,
+            renameArtist,
+            removeSong: removeSongFromPlaylist,
+            moveSong,
+            copySong: copySongToPlaylist,
+          }}
+        />
+      </div>
     );
   }
 
