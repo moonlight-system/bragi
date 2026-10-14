@@ -15,6 +15,7 @@ import type { ItemEditor } from "../CursorList";
 import { parseBuffer } from 'music-metadata';
 import { readFile, writeFile } from '@tauri-apps/plugin-fs';
 import { isAndroid, newId } from '../../types_and_functions';
+import { ChevronLeft, Pause, Play, Repeat1, RotateCcw, RotateCw, Shuffle, SkipBack, SkipForward } from "lucide-react";
 
 type FocusColumn = "playlists" | "songs";
 
@@ -48,7 +49,7 @@ function PlayerButton({ label, onClick, active = false }: {
         onClick={onClick}
         style={{ color: active ? "var(--buttons-accent-color)" : "var(--text-color)" }}
       >
-        {label}
+        <ChevronLeft size={30} strokeWidth={4} />
       </button>
     );
   }
@@ -309,13 +310,35 @@ function HomeScreen({
             <ProgressBar/>
 
             <div className="player_controls">
-              <PlayerButton label="Prev" onClick={player.previous} />
-              <PlayerButton label="-10s" onClick={() => player.seekBy(-10)} />
-              <PlayerButton label={player.isPlaying ? "Pause" : "Play"} onClick={player.togglePlay} />
-              <PlayerButton label="+10s" onClick={() => player.seekBy(10)} />
-              <PlayerButton label="Next" onClick={player.next} />
-              <PlayerButton label="Loop" active={player.loop} onClick={player.toggleLoop} />
-              <PlayerButton label="Shuffle" active={player.shuffle} onClick={player.toggleShuffle} />
+
+              <button className="app_button" onMouseDown={(e) => e.preventDefault()} onClick={player.previous}>
+                <SkipBack size={30} strokeWidth={3} />
+              </button>
+
+              <button className="app_button" onMouseDown={(e) => e.preventDefault()} onClick={() => player.seekBy(-10)}>
+                <RotateCcw size={30} strokeWidth={3} />
+              </button>
+
+              <button className="app_button" onMouseDown={(e) => e.preventDefault()} onClick={player.togglePlay}>
+                {player.isPlaying ? <Pause size={30} strokeWidth={3} /> : <Play size={30} strokeWidth={3} />}
+              </button>
+
+              <button className="app_button" onMouseDown={(e) => e.preventDefault()} onClick={() => player.seekBy(10)}>
+                <RotateCw size={30} strokeWidth={3} />
+              </button>
+
+              <button className="app_button" onMouseDown={(e) => e.preventDefault()} onClick={player.next}>
+                <SkipForward size={30} strokeWidth={3} />
+              </button>
+
+              <button className="app_button" onMouseDown={(e) => e.preventDefault()} style={{ color: player.loop ? "var(--buttons-accent-color)" : "var(--text-color)" }} onClick={player.toggleLoop}>
+                <Repeat1 size={30} strokeWidth={2} />
+              </button>
+
+              <button className="app_button" onMouseDown={(e) => e.preventDefault()} style={{ color: player.shuffle ? "var(--buttons-accent-color)" : "var(--text-color)" }} onClick={player.toggleShuffle}>
+                <Shuffle size={30} strokeWidth={2} />
+              </button>
+
             </div>
           </div>
 

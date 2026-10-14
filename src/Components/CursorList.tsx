@@ -53,6 +53,19 @@ function CursorList<T>({
     const [textInput, setTextInput] = useState("");
     const inputRef = useRef<HTMLInputElement>(null);
 
+    const [shiftHeld, setShiftHeld] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
+    const dragIndexRef = useRef<number | null>(null);      // index of the row being dragged
+    const swapPendingRef = useRef(false);                   // a swap was requested but not rendered yet
+    const suppressClickRef = useRef(false);                 // stops the click that ends a drag from activating the row
+
+    // handlers registered on window must see the latest props, not the ones from when the drag started
+    const latest = useRef({ items, onReorder, onSelectedIndexChange });
+    latest.current = { items, onReorder, onSelectedIndexChange };
+
+    // only the focused, idle, reorderable list shows the drag handles
+    const dragMode = !!onReorder && enabled && mode === "idle" && (shiftHeld || isDragging);
+
     useEffect(() => {
         const selectedRow = rowRefs.current[selectedIndex];
         if (selectedRow) {
@@ -121,7 +134,76 @@ function CursorList<T>({
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [enabled, mode, items, selectedIndex, textInput, onSelectedIndexChange, onActivate, editableFields, onDelete, onCreate, onReorder]);
 
+    // is Shift currently held? (blur covers releasing it while the window is unfocused)
+    useEffect(() => {
+        function onKey(event: KeyboardEvent) {
+            if (event.key === "Shift") setShiftHeld(event.type === "keydown");
+        }
+        const onBlur = () => setShiftHeld(false);
+        window.addEventListener("keydown", onKey);
+        window.addEventListener("keyup", onKey);
+        window.addEventListener("blur", onBlur);
+        return () => {
+            window.removeEventListener("keydown", onKey);
+            window.removeEventListener("keyup", onKey);
+            window.removeEventListener("blur", onBlur);
+        };
+    }, []);
+
+    // a swap is done once the list has re-rendered: only then is it safe to measure rows again
+    useEffect(() => {
+        swapPendingRef.current = false;
+    }, [items]);
+
     const cursorOpacity = items.length === 0 ? '0%' : enabled ? '100%' : '35%';
+
+        function startDrag(event: React.MouseEvent, index: number) {
+        if (event.button !== 0 || !dragMode) return;   // left button only, and only in drag mode
+        event.preventDefault();                         // no text selection while dragging
+        dragIndexRef.current = index;
+        suppressClickRef.current = true;
+        setIsDragging(true);
+        onSelectedIndexChange(index);
+
+        function onMove(e: MouseEvent) {
+            const from = dragIndexRef.current;
+            if (from === null || swapPendingRef.current) return;
+            const l = latest.current;
+            if (!l.onReorder) return;
+
+            // swap with a neighbor once the pointer passes its midpoint
+            let direction: "up" | "down" | null = null;
+            const above = rowRefs.current[from - 1];
+            const below = rowRefs.current[from + 1];
+            if (above) {
+                const r = above.getBoundingClientRect();
+                if (e.clientY < r.top + r.height / 2) direction = "up";
+            }
+            if (!direction && below) {
+                const r = below.getBoundingClientRect();
+                if (e.clientY > r.top + r.height / 2) direction = "down";
+            }
+            if (!direction) return;
+
+            const to = direction === "up" ? from - 1 : from + 1;
+            swapPendingRef.current = true;
+            l.onReorder(l.items[from], direction);
+            dragIndexRef.current = to;
+            l.onSelectedIndexChange(to);   // the ">" follows the row, like with Shift + arrows
+        }
+
+        function onUp() {
+            window.removeEventListener("mousemove", onMove);
+            window.removeEventListener("mouseup", onUp);
+            dragIndexRef.current = null;
+            setIsDragging(false);
+            // the click event fires right after mouseup: keep ignoring it for a moment
+            setTimeout(() => { suppressClickRef.current = false; }, 50);
+        }
+
+        window.addEventListener("mousemove", onMove);
+        window.addEventListener("mouseup", onUp);
+    }
 
     function stopEditing() {
         setEditingField(null);
@@ -138,7 +220,7 @@ function CursorList<T>({
     }
 
     return(
-        <div className={`${className} cursor_list_wrapper`}>
+        <div className={`${className} cursor_list_wrapper ${dragMode ? "drag_mode" : ""} ${isDragging ? "is_dragging" : ""}`}>
             {onCreate && (<div style={{opacity: mode === "creating" ? '100%' : '0%'}} className="new_label rendered_item">New name:
                 <input
                 className="new_label_input app_input"
@@ -162,11 +244,14 @@ function CursorList<T>({
                             className="rendered_item"
                             ref={(el) => { rowRefs.current[index] = el; }}
                             key={keyExtractor(item)}
+                            onMouseDown={(e) => startDrag(e, index)}
                             onClick={() => {
+                                if (suppressClickRef.current) return;
                                 if (mode !== "idle") return;
                                 onSelectedIndexChange(index);
                                 onActivate?.(item);
                             }}>
+                            {dragMode && <span className="drag_handle">⠿</span>}
                             {renderItem(item, index === selectedIndex, {
                                 field: mode === "renaming" && index === selectedIndex ? editingField : null,
                                 commit: commitEdit,

@@ -50,3 +50,29 @@
 .cursor_list .rendered_item {
     cursor: pointer;
 }
+
+.cursor_list .rendered_item {
+    position: relative;   /* anchor for the drag handle */
+}
+
+/* drag mode: make room for the handle between the ">" and the text */
+.drag_mode .cursor_list .rendered_item {
+    padding-left: 3rem;
+    cursor: grab;
+}
+.is_dragging .cursor_list .rendered_item {
+    cursor: grabbing;
+}
+.drag_mode,
+.is_dragging {
+    user-select: none;
+}
+
+.drag_handle {
+    position: absolute;
+    left: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--list-accent-color);
+    pointer-events: none;
+}
