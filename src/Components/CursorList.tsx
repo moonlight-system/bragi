@@ -139,7 +139,7 @@ function CursorList<T>({
 
     return(
         <div className={`${className} cursor_list_wrapper`}>
-            {onCreate && (<div style={{opacity: mode !== "idle" ? '100%' : '0%'}} className="new_label rendered_item">New name:
+            {onCreate && (<div style={{opacity: mode === "creating" ? '100%' : '0%'}} className="new_label rendered_item">New name:
                 <input
                 className="new_label_input app_input"
                 ref={inputRef}
