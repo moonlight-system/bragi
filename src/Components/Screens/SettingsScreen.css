@@ -91,3 +91,16 @@
     background-color: var(--tertiary-bg-color);
     color: var(--text-color);
 }
+
+.preset_select option.preset_option_dark {
+    background-color: var(--tertiary-bg-color);
+}
+.preset_select option.preset_option_light {
+    background-color: var(--primary-bg-color);
+}
+.preset_select[data-dark="true"] option.preset_option_light {
+    color: #ffffff;
+}
+.preset_select[data-dark="false"] option.preset_option_dark {
+    color: #2b2b2e;
+}

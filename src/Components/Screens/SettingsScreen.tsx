@@ -45,6 +45,7 @@ const THEME_SETTINGS: ThemeSetting[] = [
 
 type ThemePreset = {
     name: string;
+    dark?: boolean;                   // true = shown with a dark background in the dropdown
     colors: Record<string, string>;   // CSS variable -> color, for every setting
 };
 
@@ -70,10 +71,19 @@ function buildPreset(
 }
 
 const THEME_PRESETS: ThemePreset[] = [
-    { name: "Bragi", colors: buildPreset("#00ff9d", ["#25252B", "#1c1c20", "#141418"], "#ffffff") },
-    { name: "Midnight", colors: buildPreset("#5c7aff", ["#1b1f33", "#151827", "#0f1220"], "#ffffff") },
+    { 
+        name: "Bragi", 
+        dark: true,
+        colors: buildPreset("#00ff9d", ["#25252B", "#1c1c20", "#141418"], "#ffffff") 
+    },
+    { 
+        name: "Midnight", 
+        dark: true,
+        colors: buildPreset("#5c7aff", ["#1b1f33", "#151827", "#0f1220"], "#ffffff") 
+    },
     {
         name: "Sunset",
+        dark: true,
         colors: buildPreset("#ff9f50", ["#2a1f26", "#221a20", "#1a1418"], "#ffffff", {
             "--title-accent-color": "#ff4848",
             "--progress-accent-color": "#ff9148",
@@ -82,6 +92,7 @@ const THEME_PRESETS: ThemePreset[] = [
     },
     {
         name: "Espresso",
+        dark: true,
         colors: buildPreset("#d9a066", ["#2b1f19", "#231915", "#1a110e"], "#efe3d0", {
             "--title-accent-color": "#f2d3a4",
             "--visualizer-accent-color": "#c8864a",
@@ -89,6 +100,7 @@ const THEME_PRESETS: ThemePreset[] = [
     },
     {
         name: "Red Velvet",
+        dark: true,
         colors: buildPreset("#e5383b", ["#1a0b0d", "#130709", "#0c0405"], "#f2e6e6", {
             "--title-accent-color": "#c1121f",
             "--visualizer-accent-color": "#ff5a5f",
@@ -96,6 +108,7 @@ const THEME_PRESETS: ThemePreset[] = [
     },
     {
         name: "Forest",
+        dark: true,
         colors: buildPreset("#34c17b", ["#16251c", "#101c15", "#0b130e"], "#e6f2e4", {
             "--title-accent-color": "#b9e4a3",
             "--visualizer-accent-color": "#7ddf64",
@@ -103,6 +116,7 @@ const THEME_PRESETS: ThemePreset[] = [
     },
     {
         name: "Synthwave",
+        dark: true,
         colors: buildPreset("#ff3cac", ["#241734", "#1b1027", "#130a1c"], "#f3e9ff", {
             "--title-accent-color": "#2de2e6",
             "--visualizer-accent-color": "#2de2e6",
@@ -111,6 +125,7 @@ const THEME_PRESETS: ThemePreset[] = [
     },
     {
         name: "Graphite",
+        dark: true,
         colors: buildPreset("#f5f5f5", ["#262626", "#1c1c1c", "#121212"], "#a8a8a8", {
             "--title-accent-color": "#ffffff",
             "--visualizer-accent-color": "#d0d0d0",
@@ -118,6 +133,7 @@ const THEME_PRESETS: ThemePreset[] = [
     },
     {
         name: "Amethyst",
+        dark: true,
         colors: buildPreset("#b794f6", ["#231a33", "#1a1327", "#120c1c"], "#e9e1f5", {
             "--title-accent-color": "#d6bcfa",
             "--visualizer-accent-color": "#9f7aea",
@@ -125,6 +141,7 @@ const THEME_PRESETS: ThemePreset[] = [
     },
     {
         name: "Ocean",
+        dark: true,
         colors: buildPreset("#ff8a75", ["#0f2a33", "#0b2028", "#07161c"], "#e0f2f1", {
             "--title-accent-color": "#ffb199",
             "--visualizer-accent-color": "#4fd1c5",
@@ -132,6 +149,7 @@ const THEME_PRESETS: ThemePreset[] = [
     },
     {
         name: "Amber",
+        dark: true,
         colors: buildPreset("#ffcc4d", ["#17120b", "#110d08", "#0b0805"], "#a87927", {
             "--visualizer-accent-color": "#ffa726",
         }),
@@ -184,6 +202,15 @@ const THEME_PRESETS: ThemePreset[] = [
         colors: buildPreset("#e49400", ["#fdf3d8", "#f8e6b8", "#f0d796"], "#5c3d0a", {
             "--title-accent-color": "#e49400",
             "--visualizer-accent-color": "#ffc400",
+        }),
+    },
+    {
+        name: "Rose Garden",
+        colors: buildPreset("#c2406a", ["#f8ecec", "#f0dcdc", "#e6c9cb"], "#3b2530", {
+            "--title-accent-color": "#3f6b4d",
+            "--songs-accent-color": "#3f6b4d",
+            "--progress-accent-color": "#c2406a",
+            "--visualizer-accent-color": "#6f9c78",
         }),
     },
 ];
@@ -268,6 +295,7 @@ function SettingsScreen({ onswitchToHomeScreen, onColorsChange }: {
                                 <select
                                     className="preset_select app_input"
                                     value={activePreset?.name ?? ""}
+                                    data-dark={activePreset?.dark ? "true" : "false"}
                                     onChange={(e) => {
                                         const preset = THEME_PRESETS.find(p => p.name === e.target.value);
                                         if (preset) applyColors(preset.colors);
@@ -278,7 +306,11 @@ function SettingsScreen({ onswitchToHomeScreen, onColorsChange }: {
                                 >
                                     <option value="" disabled>Custom</option>
                                     {THEME_PRESETS.map(preset => (
-                                        <option key={preset.name} value={preset.name}>{preset.name}</option>
+                                        <option
+                                            key={preset.name}
+                                            value={preset.name}
+                                            className={preset.dark ? "preset_option_dark" : "preset_option_light"}
+                                        >{preset.name}</option>
                                     ))}
                                 </select>
                             </div>
