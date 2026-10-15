@@ -64,7 +64,7 @@ function CursorList<T>({
     latest.current = { items, onReorder, onSelectedIndexChange };
 
     // only the focused, idle, reorderable list shows the drag handles
-    const dragMode = !!onReorder && enabled && mode === "idle" && (shiftHeld || isDragging);
+    const dragMode = !!onReorder && mode === "idle" && (shiftHeld || isDragging);
 
     useEffect(() => {
         const selectedRow = rowRefs.current[selectedIndex];

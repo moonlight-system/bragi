@@ -15,7 +15,7 @@ import type { ItemEditor } from "../CursorList";
 import { parseBuffer } from 'music-metadata';
 import { readFile, writeFile } from '@tauri-apps/plugin-fs';
 import { isAndroid, newId } from '../../types_and_functions';
-import { ChevronLeft, Pause, Play, Repeat1, RotateCcw, RotateCw, Shuffle, SkipBack, SkipForward } from "lucide-react";
+import { Pause, Play, Repeat1, RotateCcw, RotateCw, Shuffle, SkipBack, SkipForward } from "lucide-react";
 
 type FocusColumn = "playlists" | "songs";
 
@@ -35,24 +35,6 @@ function SongListItem({ song, selected, editor }: {
     </div>
   );
 }
-
-function PlayerButton({ label, onClick, active = false }: {
-    label: string;
-    onClick: () => void;
-    active?: boolean;
-  }) {
-    return (
-      <button
-        className="app_button"
-        tabIndex={-1}
-        onMouseDown={(e) => e.preventDefault()}
-        onClick={onClick}
-        style={{ color: active ? "var(--buttons-accent-color)" : "var(--text-color)" }}
-      >
-        <ChevronLeft size={30} strokeWidth={4} />
-      </button>
-    );
-  }
 
 // reads the artist from the mp3's tags (ID3); null if the file has none or can't be read
 async function readTags(bytes: Uint8Array): Promise<{ title: string | null; artist: string | null }> {
@@ -121,6 +103,7 @@ function HomeScreen({
     : [];
   const playingSongId = player.currentSong?.id ?? null;
   const playingSongIsListed = viewedSongs.some(s => s.id === playingSongId);
+  const playingPlaylist = playlists.find(p => p.id === player.currentPlaylistId) ?? null;
   const [copyingSong, setCopyingSong] = useState<Song | null>(null);
   const [copyTargetIndex, setCopyTargetIndex] = useState(0);
   const selectedSong: Song | undefined = viewedSongs[songIndex];
@@ -291,6 +274,8 @@ function HomeScreen({
         </div>)}
 
         {player.hasPlayed && (<div className="panel main_player">
+          <div className="player_playlist_name">{playingPlaylist?.name}</div>
+
           <div className="visualizer_area">
             <Visualizer />
           </div>
@@ -332,11 +317,11 @@ function HomeScreen({
               </button>
 
               <button className="app_button" onMouseDown={(e) => e.preventDefault()} style={{ color: player.loop ? "var(--buttons-accent-color)" : "var(--text-color)" }} onClick={player.toggleLoop}>
-                <Repeat1 size={30} strokeWidth={2} />
+                <Repeat1 size={30} strokeWidth={3} />
               </button>
 
               <button className="app_button" onMouseDown={(e) => e.preventDefault()} style={{ color: player.shuffle ? "var(--buttons-accent-color)" : "var(--text-color)" }} onClick={player.toggleShuffle}>
-                <Shuffle size={30} strokeWidth={2} />
+                <Shuffle size={30} strokeWidth={3} />
               </button>
 
             </div>

@@ -120,12 +120,21 @@ function App() {
     } catch {}
   }, [preferences, isLoaded]);
 
+  // lets CSS show or hide the keybind footers
+  useEffect(() => {
+    document.documentElement.dataset.showKeybinds = String(preferences.showKeybinds ?? true);
+  }, [preferences.showKeybinds]);
+
   function updateColors(changes: Record<string, string>) {
     setPreferences(prev => ({ ...prev, colors: { ...prev.colors, ...changes } }));
   }
 
   function setBackOnRight(value: boolean) {
     setPreferences(prev => ({ ...prev, backOnRight: value }));
+  }
+
+  function setShowKeybinds(value: boolean) {
+    setPreferences(prev => ({ ...prev, showKeybinds: value }));
   }
 
   function switchToHomeScreen() {
@@ -295,7 +304,12 @@ function App() {
         />
       )}
       {currentScreen == "SettingsScreen" && (
-        <SettingsScreen onswitchToHomeScreen={switchToHomeScreen} onColorsChange={updateColors}/>
+        <SettingsScreen
+          onswitchToHomeScreen={switchToHomeScreen}
+          onColorsChange={updateColors}
+          showKeybinds={preferences.showKeybinds ?? true}
+          onShowKeybindsChange={setShowKeybinds}
+        />
       )}
     </div>
   );

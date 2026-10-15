@@ -26,6 +26,7 @@ export function formatTime(seconds: number): string {
 export type UserPreferences = {
   colors: Record<string, string>;
   backOnRight?: boolean;
+  showKeybinds?: boolean;
 };
 
 export const isAndroid = navigator.userAgent.includes('Android');

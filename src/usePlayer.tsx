@@ -46,12 +46,13 @@ function resumeContext() {
 }
 
 type Queue = {
-  base: string[];    // song ids in the playlist's own order (snapshot)
-  order: string[];   // the order actually being played: same as base, or a shuffled copy
-  position: number;  // index into `order` of the current song
+  base: string[];
+  order: string[];
+  position: number;
+  playlistId: string | null;
 };
 
-const EMPTY_QUEUE: Queue = { base: [], order: [], position: 0 };
+const EMPTY_QUEUE: Queue = { base: [], order: [], position: 0, playlistId: null };
 
 // Fisher–Yates shuffle; `firstId` (the current song) is pinned to the front
 function shuffled(ids: string[], firstId: string | null): string[] {
@@ -114,7 +115,7 @@ function usePlayer(songs: Song[]) {
     const base = [...playlist.songIds];
     const order = shuffle ? shuffled(base, song.id) : base;
     const position = shuffle ? 0 : base.indexOf(song.id);
-    setQueue({ base, order, position });
+    setQueue({ base, order, position, playlistId: playlist.id });
     loadAndPlay(song);
   }
 
@@ -216,6 +217,7 @@ function usePlayer(songs: Song[]) {
     toggleShuffle,
     seekBy,
     hasPlayed,
+    currentPlaylistId: queue.playlistId,
   };
 }
 

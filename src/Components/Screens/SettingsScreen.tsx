@@ -154,6 +154,16 @@ const THEME_PRESETS: ThemePreset[] = [
             "--visualizer-accent-color": "#ffa726",
         }),
     },
+    {
+        name: "Black Pink",
+        dark: true,
+        colors: buildPreset("#f038e7", ["hsl(320, 10%, 20%)", "hsl(320, 20%, 13%)", "hsl(320, 60%, 6%)"], "#f5dede", {
+            "--title-accent-color": "#f038e7",
+            "--songs-accent-color": "#f038e7",
+            "--progress-accent-color": "#f038e7",
+            "--visualizer-accent-color": "#ffffff",
+        }),
+    },
 
     {
         name: "Angel",
@@ -215,9 +225,11 @@ const THEME_PRESETS: ThemePreset[] = [
     },
 ];
 
-function SettingsScreen({ onswitchToHomeScreen, onColorsChange }: {
+function SettingsScreen({ onswitchToHomeScreen, onColorsChange, showKeybinds, onShowKeybindsChange }: {
     onswitchToHomeScreen: () => void;
     onColorsChange: (changes: Record<string, string>) => void;
+    showKeybinds: boolean;
+    onShowKeybindsChange: (value: boolean) => void;
 }){
 
     const categories = ["Theme"];
@@ -290,7 +302,6 @@ function SettingsScreen({ onswitchToHomeScreen, onColorsChange }: {
 
                         <div className="setting">
                             <div className="setting_label">Preset themes</div>
-                            <div className="setting_filler" />
                             <div className="setting_control">
                                 <select
                                     className="preset_select app_input"
@@ -316,10 +327,22 @@ function SettingsScreen({ onswitchToHomeScreen, onColorsChange }: {
                             </div>
                         </div>
 
+                        <div className="setting">
+                            <div className="setting_label">Show keybinds</div>
+                            <input
+                                type="checkbox"
+                                className="setting_checkbox"
+                                checked={showKeybinds}
+                                onChange={(e) => {
+                                    onShowKeybindsChange(e.target.checked);
+                                    e.target.blur();   // otherwise Space would toggle the box instead of pausing the music
+                                }}
+                            />
+                        </div>
+
                         {THEME_SETTINGS.map((setting) => (
                             <div className="setting" key={setting.variable}>
                                 <div className={`setting_label ${setting.underGlobal ? "setting_label_indented" : ""}`}>{setting.label}</div>
-                                <div className="setting_filler" />
                                 <div className="setting_control">
                                     <PaletteColorPicker
                                         color={colors[setting.variable]}

@@ -29,45 +29,36 @@
 }
 
 .theme_settings_container {
-    display: table;
+    display: flex;
+    flex-direction: column;
     width: 100%;
-    border-spacing: 0;
 }
 
 .setting {
-    display: table-row;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;   /* label on the left, control on the right */
+    gap: var(--settings-column-gap);
+    padding: 0.5rem 0;
 }
 
 .setting:nth-child(odd) {
     background-color: var(--primary-bg-color);
 }
 
-.setting_label,
-.setting_control {
-    display: table-cell;
-    vertical-align: middle;
-    padding: 0.5rem 0;
+.setting_label {
+    padding-left: 2rem;
     white-space: nowrap;
 }
 
-.setting_label {
-    padding-left: 2rem;
-    text-align: left;
-}
-
 .setting_control {
-    padding-left: var(--settings-column-gap);
+    flex-shrink: 0;
 }
 
 /* swallows all the leftover width, so the two columns above stay as narrow as their content */
 .setting_filler {
     display: table-cell;
     width: 100%;
-}
-
-/* every picker hugs the right edge of its column, whatever its width */
-.setting_control .palette_picker {
-    margin-left: auto;
 }
 
 .setting_label_indented {
@@ -103,4 +94,11 @@
 }
 .preset_select[data-dark="false"] option.preset_option_dark {
     color: #2b2b2e;
+}
+
+.setting_checkbox{
+    width: 1.6rem; 
+    height: 1.6rem;
+    accent-color: var(--playlist-accent-color);
+    margin-right: 12px;
 }
