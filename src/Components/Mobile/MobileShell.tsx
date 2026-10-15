@@ -11,6 +11,9 @@ import type { SheetAction } from "./Sheets";
 import { pickSongs } from "../../importSongs";
 import { pickCover } from "../../pickCover";
 import { ChevronLeft, Plus, Settings } from "lucide-react";
+import { Mp3Picker } from "./Mp3Picker";
+import { ensureAudioPermission, importDeviceMp3, hasNativeAudio } from "../../nativeAudio";
+import type { DeviceMp3 } from "../../nativeAudio";
 
 export type MobileActions = {
   createPlaylist: (name: string) => void;
@@ -32,6 +35,7 @@ type Modal =
   | { kind: "songMenu"; song: Song }
   | { kind: "copyPicker"; song: Song }
   | { kind: "prompt"; title: string; initial?: string; onSubmit: (value: string) => void }
+  | { kind: "mp3Picker"; playlist: Playlist }
   | null;
 
 function MobileShell({ playlists, songs, player, onColorsChange, actions, backOnRight, onBackOnRightChange, font, onFontChange }: {
@@ -98,9 +102,30 @@ function MobileShell({ playlists, songs, player, onColorsChange, actions, backOn
   }
 
   async function importInto(playlist: Playlist) {
+    // preferred: Bragi's own list of mp3s, if the native bridge exists and the permission is granted
+    if (hasNativeAudio() && (await ensureAudioPermission())) {
+      setModal({ kind: "mp3Picker", playlist });
+      return;
+    }
+    // fallback: the system file picker
     setImporting(true);
     try {
       await pickSongs((song) => actions.addSongs([song], playlist));
+    } catch (err) {
+      console.error("import failed:", err);
+    } finally {
+      setImporting(false);
+    }
+  }
+
+  async function importDevice(playlist: Playlist, items: DeviceMp3[]) {
+    setImporting(true);
+    try {
+      for (const item of items) {
+        const song = await importDeviceMp3(item);
+        if (song) actions.addSongs([song], playlist);
+        await new Promise(r => setTimeout(r));   // the copy blocks briefly: let the UI breathe
+      }
     } catch (err) {
       console.error("import failed:", err);
     } finally {
@@ -239,6 +264,12 @@ function MobileShell({ playlists, songs, player, onColorsChange, actions, backOn
         {modal?.kind === "prompt" && (
           <TextPrompt title={modal.title} initial={modal.initial} onSubmit={modal.onSubmit} onClose={close} />
         )}
+        {modal?.kind === "mp3Picker" && (
+        <Mp3Picker
+          onClose={close}
+          onImport={(items) => { const target = modal.playlist; close(); importDevice(target, items); }}
+        />
+      )}
     </div>
   );
 }

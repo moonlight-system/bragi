@@ -23,7 +23,7 @@ export async function pickSongs(onSong: (song: Song) => void): Promise<void> {
   // must be created and clicked synchronously, inside the tap that triggered the import
   const input = document.createElement('input');
   input.type = 'file';
-  input.accept = 'audio/mpeg,.mp3';
+  input.accept = '.mp3,audio/mpeg,audio/mp3';
   input.multiple = true;
 
   const files = await new Promise<File[]>((resolve) => {
@@ -33,8 +33,12 @@ export async function pickSongs(onSong: (song: Song) => void): Promise<void> {
   });
   if (files.length === 0) return;
 
+  // ignore anything that isn't an mp3, in case the picker let it through
+  const mp3Files = files.filter(f => f.type === 'audio/mpeg' || /\.mp3$/i.test(f.name));
+  if (mp3Files.length === 0) return;
+
   const bragiDir = await getBragiDir();
-  for (const file of files) {
+  for (const file of mp3Files) {
     const id = newId();
     const bytes = new Uint8Array(await file.arrayBuffer());
     const dest = await join(bragiDir, 'songs', `${id}.mp3`);
