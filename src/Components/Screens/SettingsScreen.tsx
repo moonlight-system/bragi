@@ -3,6 +3,7 @@ import './SettingsScreen.css';
 import { CursorList } from "../CursorList";
 import { PaletteColorPicker } from "../PaletteColorPicker";
 import { getCssVariable } from "../../types_and_functions";
+import { FONT_OPTIONS } from "../../fonts";
 
 const ACCENT_PALETTE = [
     "#ff0000", "#fc7100", "#ffbb00", "#07d300", "#00ff9d", "#00e6d2", "#1640ff", "#ad009f", "#ff10eb", "#d8d8d8",
@@ -225,11 +226,13 @@ const THEME_PRESETS: ThemePreset[] = [
     },
 ];
 
-function SettingsScreen({ onswitchToHomeScreen, onColorsChange, showKeybinds, onShowKeybindsChange }: {
+function SettingsScreen({ onswitchToHomeScreen, onColorsChange, showKeybinds, onShowKeybindsChange, font, onFontChange }: {
     onswitchToHomeScreen: () => void;
     onColorsChange: (changes: Record<string, string>) => void;
     showKeybinds: boolean;
     onShowKeybindsChange: (value: boolean) => void;
+    font: string;
+    onFontChange: (name: string) => void;
 }){
 
     const categories = ["Theme"];
@@ -322,6 +325,22 @@ function SettingsScreen({ onswitchToHomeScreen, onColorsChange, showKeybinds, on
                                             value={preset.name}
                                             className={preset.dark ? "preset_option_dark" : "preset_option_light"}
                                         >{preset.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="setting">
+                            <div className="setting_label">Font</div>
+                            <div className="setting_control">
+                                <select
+                                    className="preset_select app_input"
+                                    value={font}
+                                    onChange={(e) => { onFontChange(e.target.value); e.target.blur(); }}
+                                    onKeyDown={(e) => { if (e.key !== "Escape") e.stopPropagation(); }}
+                                >
+                                    {FONT_OPTIONS.map(f => (
+                                        <option key={f.name} value={f.name} style={{ fontFamily: f.family }}>{f.name}</option>
                                     ))}
                                 </select>
                             </div>

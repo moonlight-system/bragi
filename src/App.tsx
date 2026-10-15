@@ -10,6 +10,7 @@ import type { Playlist, Song, UserPreferences } from './types_and_functions';
 import { usePlayer } from './usePlayer';
 import { isAndroid, newId } from './types_and_functions';
 import { MobileShell } from './Components/Mobile/MobileShell';
+import { applyFont, DEFAULT_FONT } from './fonts';
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<"HomeScreen" | "SettingsScreen">("HomeScreen");
@@ -125,12 +126,24 @@ function App() {
     document.documentElement.dataset.showKeybinds = String(preferences.showKeybinds ?? true);
   }, [preferences.showKeybinds]);
 
+  // apply the chosen font and keep a synchronous copy for the next startup
+  useEffect(() => {
+    if (!isLoaded) return;   // before loading, preferences are empty and would reset the font to the default
+    const name = preferences.font ?? DEFAULT_FONT;
+    applyFont(name);
+    try { localStorage.setItem("bragi-font", name); } catch {}
+  }, [preferences.font, isLoaded]);
+
   function updateColors(changes: Record<string, string>) {
     setPreferences(prev => ({ ...prev, colors: { ...prev.colors, ...changes } }));
   }
 
   function setBackOnRight(value: boolean) {
     setPreferences(prev => ({ ...prev, backOnRight: value }));
+  }
+
+  function setFont(name: string) {
+    setPreferences(prev => ({ ...prev, font: name }));
   }
 
   function setShowKeybinds(value: boolean) {
@@ -272,6 +285,8 @@ function App() {
           }}
           backOnRight={preferences.backOnRight ?? false}
           onBackOnRightChange={setBackOnRight}
+          font={preferences.font ?? DEFAULT_FONT}
+          onFontChange={setFont}
         />
       </div>
     );
@@ -309,6 +324,8 @@ function App() {
           onColorsChange={updateColors}
           showKeybinds={preferences.showKeybinds ?? true}
           onShowKeybindsChange={setShowKeybinds}
+          font={preferences.font ?? DEFAULT_FONT}
+          onFontChange={setFont}
         />
       )}
     </div>

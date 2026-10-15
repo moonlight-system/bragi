@@ -10,8 +10,8 @@
   filter: drop-shadow(0 0 2em #61dafb);
 }
 :root {
-  font-family: Pixelify Sans;
-  letter-spacing: 0.15em;
+  font-family: var(--app-font, "Silkscreen", sans-serif);
+  letter-spacing: var(--app-letter-spacing, 0.15em);
   font-size: 16px;
   line-height: 24px;
   font-weight: 400;

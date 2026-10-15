@@ -34,7 +34,7 @@ type Modal =
   | { kind: "prompt"; title: string; initial?: string; onSubmit: (value: string) => void }
   | null;
 
-function MobileShell({ playlists, songs, player, onColorsChange, actions, backOnRight, onBackOnRightChange }: {
+function MobileShell({ playlists, songs, player, onColorsChange, actions, backOnRight, onBackOnRightChange, font, onFontChange }: {
   playlists: Playlist[];
   songs: Song[];
   player: Player;
@@ -42,6 +42,8 @@ function MobileShell({ playlists, songs, player, onColorsChange, actions, backOn
   actions: MobileActions;
   backOnRight: boolean;
   onBackOnRightChange: (value: boolean) => void;
+  font: string;
+  onFontChange: (name: string) => void;
 }) {
   const nav = useMobileNav();
   const [viewedPlaylistId, setViewedPlaylistId] = useState<string | null>(null);
@@ -195,7 +197,7 @@ function MobileShell({ playlists, songs, player, onColorsChange, actions, backOn
             )}
             {nav.screen === "player" && <MobilePlayerScreen player={player} />}
             {nav.screen === "settings" && (
-              <MobileSettings onColorsChange={onColorsChange} backOnRight={backOnRight} onBackOnRightChange={onBackOnRightChange} />
+              <MobileSettings onColorsChange={onColorsChange} backOnRight={backOnRight} onBackOnRightChange={onBackOnRightChange} font={font} onFontChange={onFontChange} />
             )}
           </main>
   

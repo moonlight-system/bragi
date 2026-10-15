@@ -2,6 +2,20 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import { isAndroid } from "./types_and_functions";
+import "@fontsource/atkinson-hyperlegible/400.css";
+import "@fontsource/lexend/400.css";
+import "@fontsource/inter/400.css";
+import "@fontsource/nunito/400.css";
+import "@fontsource/open-sans/400.css";
+import "@fontsource/ibm-plex-sans/400.css";
+import "@fontsource/source-sans-3/400.css";
+import "@fontsource/comic-neue/400.css";
+import "@fontsource/opendyslexic/400.css";
+import "@fontsource/jetbrains-mono/400.css";
+import "@fontsource/vt323/400.css";
+import "@fontsource/silkscreen/400.css";
+import "@fontsource/press-start-2p/400.css";
+import { applyFont, DEFAULT_FONT } from "./fonts";
 
 document.documentElement.dataset.platform = isAndroid ? "mobile" : "desktop";
 
@@ -13,6 +27,10 @@ try {
       document.documentElement.style.setProperty(variable, value as string);
     }
   }
+} catch {}
+
+try {
+  applyFont(localStorage.getItem("bragi-font") ?? DEFAULT_FONT);
 } catch {}
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(

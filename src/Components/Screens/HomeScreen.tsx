@@ -102,7 +102,6 @@ function HomeScreen({
         .filter((s): s is Song => s !== undefined)
     : [];
   const playingSongId = player.currentSong?.id ?? null;
-  const playingSongIsListed = viewedSongs.some(s => s.id === playingSongId);
   const playingPlaylist = playlists.find(p => p.id === player.currentPlaylistId) ?? null;
   const [copyingSong, setCopyingSong] = useState<Song | null>(null);
   const [copyTargetIndex, setCopyTargetIndex] = useState(0);
@@ -239,7 +238,7 @@ function HomeScreen({
               renderItem={(s, isSelected, editor) => (
                 <SongListItem
                   song={s}
-                  selected={playingSongIsListed ? s.id === playingSongId : isSelected}
+                  selected={player.currentSong ? s.id === playingSongId : isSelected}
                   editor={editor}
                 />
               )}

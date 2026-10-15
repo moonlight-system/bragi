@@ -27,6 +27,7 @@ export type UserPreferences = {
   colors: Record<string, string>;
   backOnRight?: boolean;
   showKeybinds?: boolean;
+  font?: string;
 };
 
 export const isAndroid = navigator.userAgent.includes('Android');

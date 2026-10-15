@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { THEME_PRESETS } from "../Screens/SettingsScreen";
 import { getCssVariable } from "../../types_and_functions";
+import { FONT_OPTIONS } from "../../fonts";
 
-function MobileSettings({ onColorsChange, backOnRight, onBackOnRightChange }: {
+function MobileSettings({ onColorsChange, backOnRight, onBackOnRightChange, font, onFontChange }: {
   onColorsChange: (changes: Record<string, string>) => void;
   backOnRight: boolean;
   onBackOnRightChange: (value: boolean) => void;
+  font: string; 
+  onFontChange: (name: string) => void;
 }) {
   // the preset matching the current CSS variables (empty = "Custom")
   const [active, setActive] = useState(() =>
@@ -35,6 +38,13 @@ function MobileSettings({ onColorsChange, backOnRight, onBackOnRightChange }: {
           {THEME_PRESETS.map(preset => (
             <option key={preset.name} value={preset.name}>{preset.name}</option>
           ))}
+        </select>
+      </div>
+
+      <div className="m_setting_row" style={{ marginTop: "1.5rem" }}>
+        <div>Font</div>
+        <select className="app_input m_select" value={font} onChange={(e) => onFontChange(e.target.value)}>
+          {FONT_OPTIONS.map(f => <option key={f.name} value={f.name}>{f.name}</option>)}
         </select>
       </div>
 

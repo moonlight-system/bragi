@@ -45,14 +45,14 @@
 
 .palette_hex_label {
     color: var(--text-color);
-    font-family: Pixelify Sans;
+    font-family: inherit;
 }
 
 .palette_hex_input {
     border: none;
     background: transparent;
     outline: none;
-    font-family: Pixelify Sans;
+    font-family: inherit;
     width: 4rem;
     color: var(--text-color);
 }
