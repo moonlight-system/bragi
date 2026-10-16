@@ -56,3 +56,63 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+
+  android:
+    needs: release        # the draft release must exist first
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install frontend dependencies
+        run: pnpm install
+
+      # gradle.properties hardcodes a Windows JDK path that doesn't exist on the runner
+      - name: Remove local JDK path
+        run: sed -i '/org.gradle.java.home/d' src-tauri/gen/android/gradle.properties
+
+      - name: Write signing config
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/bragi-release.jks"
+          cat > src-tauri/gen/android/keystore.properties <<EOF
+          storeFile=$RUNNER_TEMP/bragi-release.jks
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          EOF
+
+      - name: Build APK
+        run: |
+          export NDK_HOME="$ANDROID_NDK_LATEST_HOME"
+          pnpm tauri android build --apk --target aarch64
+
+      - name: Rename APK
+        run: |
+          APK=$(find src-tauri/gen/android/app/build/outputs/apk -name "*release*.apk" | head -1)
+          mv "$APK" "Bragi-${{ github.ref_name }}-android.apk"
+
+      - name: Attach to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          draft: true
+          files: Bragi-${{ github.ref_name }}-android.apk
