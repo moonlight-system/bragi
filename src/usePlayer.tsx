@@ -3,6 +3,7 @@ import { readFile } from '@tauri-apps/plugin-fs';
 import { join } from '@tauri-apps/api/path';
 import { getBragiDir } from './storage';
 import type { Playlist, Song } from './types_and_functions';
+import { getCssVariable } from './types_and_functions';
 
 // One audio element for the whole app, created once at module level.
 const audio = new Audio();
@@ -45,6 +46,24 @@ function resumeContext() {
   }
 }
 
+// song currently loaded, and the next song's blob URL (read ahead of time)
+let nowPlaying: Song | null = null;
+let preloaded: { id: string; url: string } | null = null;
+
+async function readSongBytes(song: Song) {
+  const bragiDir = await getBragiDir();
+  return readFile(await join(bragiDir, 'songs', song.path));
+}
+
+// tells the Android notification what's playing (the bridge only exists on Android)
+function pushMedia() {
+  const bridge = (window as any).BragiMedia;
+  if (!bridge || !nowPlaying) return;
+  bridge.setColor(getCssVariable('--primary-bg-color'));
+  const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+  bridge.update(nowPlaying.name, nowPlaying.artist, !audio.paused, audio.currentTime * 1000, duration * 1000);
+}
+
 type Queue = {
   base: string[];
   order: string[];
@@ -76,33 +95,78 @@ function usePlayer(songs: Song[]) {
   const objectUrlRef = useRef<string | null>(null);
   const loadIdRef = useRef(0);
 
-  // keep React state in sync with what the audio element is really doing
   useEffect(() => {
-    const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
+    const onPlay = () => { setIsPlaying(true); pushMedia(); };
+    const onPause = () => { setIsPlaying(false); pushMedia(); };
+    const onMeta = () => pushMedia();   // duration known / user seeked
     audio.addEventListener('play', onPlay);
     audio.addEventListener('pause', onPause);
+    audio.addEventListener('durationchange', onMeta);
+    audio.addEventListener('seeked', onMeta);
     return () => {
       audio.removeEventListener('play', onPlay);
       audio.removeEventListener('pause', onPause);
+      audio.removeEventListener('durationchange', onMeta);
+      audio.removeEventListener('seeked', onMeta);
     };
+  }, []);
+
+  // read the next song into memory while the current one plays
+  useEffect(() => {
+    const n = queue.order.length;
+    if (n === 0) return;
+    const nextId = queue.order[(queue.position + 1) % n];
+    if (nextId === currentId || preloaded?.id === nextId) return;
+    const nextSong = songs.find(s => s.id === nextId);
+    if (!nextSong) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const bytes = await readSongBytes(nextSong);
+        if (cancelled) return;
+        if (preloaded) URL.revokeObjectURL(preloaded.url);
+        preloaded = { id: nextId, url: URL.createObjectURL(new Blob([bytes], { type: 'audio/mpeg' })) };
+      } catch (err) {
+        console.error('could not preload next song:', err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [queue.order, queue.position, songs]);
+
+  // notification / lock-screen buttons call this from Kotlin
+  const controlsRef = useRef({ next: () => {}, previous: () => {}, seekBy: (_s: number) => {} });
+  controlsRef.current = { next: () => step(1), previous, seekBy };
+  useEffect(() => {
+    (window as any).__bragiMedia = (cmd: string, arg: number) => {
+      if (cmd === 'play') { resumeContext(); audio.play(); }
+      else if (cmd === 'pause') audio.pause();
+      else if (cmd === 'next') controlsRef.current.next();
+      else if (cmd === 'previous') controlsRef.current.previous();
+      else if (cmd === 'seek') audio.currentTime = arg;
+      else if (cmd === 'seekby') controlsRef.current.seekBy(arg);
+    };
+    return () => { delete (window as any).__bragiMedia; };
   }, []);
 
   async function loadAndPlay(song: Song) {
     const myLoadId = ++loadIdRef.current;
     ensureAudioGraph();
     resumeContext();
+    nowPlaying = song;
     try {
-      const bragiDir = await getBragiDir();
-      const filePath = await join(bragiDir, 'songs', song.path);
-      const bytes = await readFile(filePath);
-  
-      if (myLoadId !== loadIdRef.current) return; // a newer request replaced this one
-  
-      const url = URL.createObjectURL(new Blob([bytes], { type: 'audio/mpeg' }));
+      let url: string;
+      if (preloaded && preloaded.id === song.id) {
+        url = preloaded.url;   // already in memory: no async work needed
+        preloaded = null;
+      } else {
+        const bytes = await readSongBytes(song);
+        if (myLoadId !== loadIdRef.current) return; // a newer request replaced this one
+        url = URL.createObjectURL(new Blob([bytes], { type: 'audio/mpeg' }));
+      }
       if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
       objectUrlRef.current = url;
-  
+
       audio.src = url;
       await audio.play();
     } catch (err) {
@@ -156,6 +220,7 @@ function usePlayer(songs: Song[]) {
       objectUrlRef.current = null;
     }
     setQueue(EMPTY_QUEUE);
+    (window as any).BragiMedia?.stop();
   }
 
   function toggleShuffle() {

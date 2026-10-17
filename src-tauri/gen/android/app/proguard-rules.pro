@@ -24,3 +24,7 @@
 -keepclassmembers class com.lin.bragi.BragiBridge {
     @android.webkit.JavascriptInterface <methods>;
 }
+-keep class com.lin.bragi.MediaBridge { *; }
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
